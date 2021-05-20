@@ -3,12 +3,11 @@ import numpy as np
 import tools
 
 #This is our EGM-function:
-def EGM (t,k, h, par,): 
+def DCEGM (t,k, h, par,): 
 # We need to look at their working fucntion since this is the choice with discrete choices!
 #this is the code for that
     
     #NEED CODE FOR P & S!
-    
     #FINDING THE WAR FILES
     xi = np.tile(par.xi,par.Na)
     a = np.repeat(par.grid_a[t],par.Nxi) 

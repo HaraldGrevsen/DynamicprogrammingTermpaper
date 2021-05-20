@@ -39,7 +39,6 @@ class model_dc_ourmodel():
     ############
 
     def setup(self):
-
         par = self.par
         par.T = 60
         par.Tsp = 65
@@ -61,12 +60,15 @@ class model_dc_ourmodel():
         # Grids and numerical integration for our 2 state variables
         par.a_max = 100
         par.a_phi = 1.1
+        par.Na  = 150
         par.k_max = 60
         par.k_phi = 1.1
-        
-        par.Nxi = 4
-        par.Na  = 150
         par.Nk  = 150
+        par.m_max = 100
+        par.m_phi = 1.1
+        par.Nm  = 150
+        #points in Gauss_Hermite
+        par.Nxi = 4
         
     def create_grids(self):
 
@@ -75,7 +77,7 @@ class model_dc_ourmodel():
         assert (par.rho >= 0), 'not rho > 0'
         # need more checks?
 
-        # Shocks
+        # Shocks for wage, this gives us the shock and weight!
         par.xi,par.xi_w = GaussHermite_lognorm(par.sigma_xi,par.Nxi)
         
         # Setting up grids 
@@ -90,6 +92,11 @@ class model_dc_ourmodel():
         for t in range(par.T):
             par.grid_k[t,:] = tools.nonlinspace(0+1e-8,par.k_max,par.Nk,par.k_phi)
         
+        #Grid for m?
+        par.grid_m = np.nan + np.zeros([par.T,par.Nm])
+        for t in range(par.T):
+            par.grid_m[t,:] = tools.nonlinspace(0+1e-8,par.m_max,par.Nm,par.m_phi)
+        #par.grid_m =  tools.nonlinspace(0+1e-4,par.m_max,par.Nm,par.m_phi)
         # Set seed
         np.random.seed(2021)
                 
@@ -99,26 +106,36 @@ class model_dc_ourmodel():
         sol = self.sol
         xi = np.tile(par.xi,par.Na)
 
-        shape=(par.T,par.Na,par.Nk,3,par.Nxi)
+        shape=(par.T,par.Nm,3)
         sol.m = np.nan+np.zeros(shape)
         sol.c = np.nan+np.zeros(shape)
         sol.v = np.nan+np.zeros(shape)
         
+        # In our last period the agent will consume all!
         # Last period, (= consume all) 
         for i_a in range(par.Na):
             for i_k in range(par.Nk):
-                for i_h in range(3):
+                for h in range(3):
+                    #Her forsøg uden P og S!
+                    m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi 
+                    sol.m[par.T-1,i_a,i_k,h] = m
+                    sol.c[par.T-1,i_a,i_k,h] = c
+                    sol.v[par.T-1,i_a,i_k,h] = v
+
+
+                #sol.m[par.T-1,i_m,h] = par.grid_m[i_m,:]
+                #sol.c[par.T-1,i_a,i_k,h] = par.grid_m[i_m,:]
+                #sol.v[par.T-1,i_a,i_k,h] = egm.util(sol.c[par.T-1,i_m,h],h,par) 
                 #SOLVE USING EGM:
                 #[c, v, m] = model.EGM(par.T-1,h,k,par)   
                 #sol.m[par.T-1,i_a,i_k,i_h] = m
                 #sol.c[par.T-1,i_a,i_k,i_h] = c
                 #sol.v[par.T-1,i_a,i_k,i_h] = v
                 #=egm.util(sol.c[par.T-1,i_a,i_k,i_h],i_h,par)
-                
-                    m=par.grid_a[i_a,:]*(1+par.r)+i_h*par.kappa*par.grid_k[i_k]*xi+par.P+par.rho*par.grid_k[i_k]
-                    sol.m[par.T-1,i_a,i_k,i_h] = m
-                    sol.c[par.T-1,i_a,i_k,i_h] = m
-                    sol.v[par.T-1,i_a,i_k,i_h] = egm.util(sol.c[par.T-1,i_a,i_k,i_h],i_h,par)                    
+
+                    #m=par.grid_a[i_a,:]*(1+par.r)+i_h*par.kappa*par.grid_k[i_k]*xi+par.P+par.rho*par.grid_k[i_k]
+                    #Her forsøg uden P og S!
+                    #m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi                 
                     
         # Before last period
         for t in range(par.T-2,-1,-1):
@@ -127,7 +144,7 @@ class model_dc_ourmodel():
                 for i_k, k in enumerate(par.grid_k):
                     for i_h in range(3):
                         # Solve model with EGM
-                        c,v,m = model.EGM(sol,i_h,k,t,par)
+                        c,v,m = model.DCEGM(sol,i_h,k,t,par)
                         sol.m[par.t,i_a,i_k,i_h] = m
                         sol.c[par.t,i_a,i_k,i_h] = c
                         sol.v[par.t,i_a,i_k,i_h] = v                        
