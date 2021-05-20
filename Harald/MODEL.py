@@ -1,8 +1,8 @@
 # import packages 
+import DCEGM
 import numpy as np
 import tools
 from types import SimpleNamespace
-import egm_dc_ourmodel
 import math
 
     # Constructing Gauss_hermite for the wage shocks
@@ -27,7 +27,7 @@ def GaussHermite_lognorm(sigma,n):
     assert(1 - np.sum(w*x) < 1e-8 ), 'The mean in GH-lognorm is not 1'
     return x, w
 
-class model_dc_ourmodel():
+class TheModel():
     def __init__(self,name=None):
         """ defines default attributes """
         # a. name
@@ -48,9 +48,9 @@ class model_dc_ourmodel():
         par.zeta = 0.8
         par.beta = 0.95
         par.rho = 0.1
-        par.b = 0.5
+        par.b = 0.8
         par.phi = 1
-        par.alpha = 1
+        par.alpha = 1.8
         par.sigma_xi = 0.1   #THIS IS FOR WAGE (MIGHT BE CALLED SIGMA_W)
         par.sigma_epsilon = 0.3
         par.kappa = 0.1
@@ -93,10 +93,10 @@ class model_dc_ourmodel():
             par.grid_k[t,:] = tools.nonlinspace(0+1e-8,par.k_max,par.Nk,par.k_phi)
         
         #Grid for m?
-        par.grid_m = np.nan + np.zeros([par.T,par.Nm])
-        for t in range(par.T):
-            par.grid_m[t,:] = tools.nonlinspace(0+1e-8,par.m_max,par.Nm,par.m_phi)
-        #par.grid_m =  tools.nonlinspace(0+1e-4,par.m_max,par.Nm,par.m_phi)
+        #par.grid_m = np.nan + np.zeros([par.T,par.Nm])
+        #for t in range(par.T):
+        #    par.grid_m[t,:] = tools.nonlinspace(0+1e-8,par.m_max,par.Nm,par.m_phi)
+        par.grid_m =  tools.nonlinspace(0+1e-4,par.m_max,par.Nm,par.m_phi)
         # Set seed
         np.random.seed(2021)
                 
@@ -106,21 +106,26 @@ class model_dc_ourmodel():
         sol = self.sol
         xi = np.tile(par.xi,par.Na)
 
-        shape=(par.T,par.Nm,3)
+        shape=(par.T,3,par.Nm)
         sol.m = np.nan+np.zeros(shape)
         sol.c = np.nan+np.zeros(shape)
         sol.v = np.nan+np.zeros(shape)
         
+        for h in range(3):
+            sol.m[par.T-1,h,:] = par.grid_m
+            sol.c[par.T-1,h,:] = par.grid_m
+            sol.v[par.T-1,h,:] = DCEGM.util(sol.c[par.T-1,h,:],h,par)
+
         # In our last period the agent will consume all!
         # Last period, (= consume all) 
-        for i_a in range(par.Na):
-            for i_k in range(par.Nk):
-                for h in range(3):
+        #for i_a in range(par.Na):
+        #    for i_k in range(par.Nk):
+        #        for h in range(3):
                     #Her forsøg uden P og S!
-                    m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi 
-                    sol.m[par.T-1,i_a,i_k,h] = m
-                    sol.c[par.T-1,i_a,i_k,h] = c
-                    sol.v[par.T-1,i_a,i_k,h] = v
+        #            m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi 
+        #            sol.m[par.T-1,i_a,i_k,h] = m
+        #            sol.c[par.T-1,i_a,i_k,h] = c
+        #            sol.v[par.T-1,i_a,i_k,h] = v
 
 
                 #sol.m[par.T-1,i_m,h] = par.grid_m[i_m,:]
@@ -137,22 +142,22 @@ class model_dc_ourmodel():
                     #Her forsøg uden P og S!
                     #m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi                 
                     
-        # Before last period
+        #Before last period
         for t in range(par.T-2,-1,-1):
-            for i_a in range(par.Na):
-                #Choice specific function
-                for i_k, k in enumerate(par.grid_k):
-                    for i_h in range(3):
+            for i_h in range(3):
+                #INTERPOLATE:
+                
+
+            
+                for i_a in range(par.Na):
+                    #Choice specific function
+                    for i_k, k in enumerate(par.grid_k):
                         # Solve model with EGM
                         c,v,m = model.DCEGM(sol,i_h,k,t,par)
                         sol.m[par.t,i_a,i_k,i_h] = m
                         sol.c[par.t,i_a,i_k,i_h] = c
                         sol.v[par.t,i_a,i_k,i_h] = v                        
      
-    
-    
-    
-    
     
     
     
