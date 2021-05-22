@@ -146,9 +146,6 @@ class TheModel():
         for t in range(par.T-2,-1,-1):
             for i_h in range(3):
                 #INTERPOLATE:
-                
-
-            
                 for i_a in range(par.Na):
                     #Choice specific function
                     for i_k, k in enumerate(par.grid_k):
