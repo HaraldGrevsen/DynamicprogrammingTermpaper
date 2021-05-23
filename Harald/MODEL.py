@@ -49,7 +49,8 @@ class TheModel():
         par.beta = 0.95
         par.rho = 0.1
         par.b = 0.8
-        par.phi = 1
+        par.phi1 = 1.1
+        par.phi2 = 1.1
         par.alpha = 1.8
         par.sigma_xi = 0.1   #THIS IS FOR WAGE (MIGHT BE CALLED SIGMA_W)
         par.sigma_epsilon = 0.3
@@ -88,9 +89,10 @@ class TheModel():
             par.grid_a[t,:] = tools.nonlinspace(0+1e-8,par.a_max,par.Na,par.a_phi)
         
         # We need a grid for human capital (K)
-        par.grid_k = np.nan + np.zeros([par.T,par.Nk])
-        for t in range(par.T):
-            par.grid_k[t,:] = tools.nonlinspace(0+1e-8,par.k_max,par.Nk,par.k_phi)
+        par.grid_k =  tools.nonlinspace(0+1e-4,par.k_max,par.Nk,par.k_phi)
+        #par.grid_k = np.nan + np.zeros([par.T,par.Nk])
+        #for t in range(par.T):
+        #    par.grid_k[t,:] = tools.nonlinspace(0+1e-8,par.k_max,par.Nk,par.k_phi)
         
         #Grid for m?
         #par.grid_m = np.nan + np.zeros([par.T,par.Nm])
@@ -111,6 +113,7 @@ class TheModel():
         sol.c = np.nan+np.zeros(shape)
         sol.v = np.nan+np.zeros(shape)
         
+        #Last period, consume all
         for h in range(3):
             sol.m[par.T-1,h,:] = par.grid_m
             sol.c[par.T-1,h,:] = par.grid_m
@@ -126,8 +129,6 @@ class TheModel():
         #            sol.m[par.T-1,i_a,i_k,h] = m
         #            sol.c[par.T-1,i_a,i_k,h] = c
         #            sol.v[par.T-1,i_a,i_k,h] = v
-
-
                 #sol.m[par.T-1,i_m,h] = par.grid_m[i_m,:]
                 #sol.c[par.T-1,i_a,i_k,h] = par.grid_m[i_m,:]
                 #sol.v[par.T-1,i_a,i_k,h] = egm.util(sol.c[par.T-1,i_m,h],h,par) 
@@ -145,12 +146,12 @@ class TheModel():
         #Before last period
         for t in range(par.T-2,-1,-1):
             for i_h in range(3):
-                #INTERPOLATE:
+                #INTERPOLATE?
                 for i_a in range(par.Na):
                     #Choice specific function
                     for i_k, k in enumerate(par.grid_k):
                         # Solve model with EGM
-                        c,v,m = model.DCEGM(sol,i_h,k,t,par)
+                        c,v,m = model.DCEGM(sol,i_h,i_k,t,par)
                         sol.m[par.t,i_a,i_k,i_h] = m
                         sol.c[par.t,i_a,i_k,i_h] = c
                         sol.v[par.t,i_a,i_k,i_h] = v                        
