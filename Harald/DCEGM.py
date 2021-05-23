@@ -6,54 +6,59 @@ import tools
 def DCEGM (t,k, h, par,): 
 # We need to look at their working fucntion since this is the choice with discrete choices!
 #this is the code for that
-    
+    #First this code finds w-raw, avg. marginal utility:
     #NEED CODE FOR P & S!
     #FINDING THE WAR FILES
     xi = np.tile(par.xi,par.Na)
     a = np.repeat(par.grid_a[t],par.Nxi) 
     w = np.tile(par.xi_w,(par.Na,1))
+    k = np.repeat(par.grid_k[t],(par.Na,1)) 
 
     # Next period states
-
-    k_plus = k + phi1*h**phi2
-    m_plus = (1+par.r)*a+par.W*h + P + par.rho*K_plus
-
+    k_plus = k + par.phi1*h**par.phi2
+    # We need to include P and S, in the first round i try including them both at age Tsp(65)
+    if t>Ts:    
+        m_plus = (1+par.r)*a+par.W*h + P + par.rho*K_plus
+    else:
+        m_plus = (1+par.r)*a+par.W*h
+    
     # Value, consumption, marg_util
     shape = (2,m_plus.size)
     v_plus = np.nan+np.zeros(shape)
     c_plus = np.nan+np.zeros(shape)
     marg_u_plus = np.nan+np.zeros(shape)
 
-    #next period ressources given todays work 
-    if t>Tsp:
+    # next period ressources given todays work (m_plus)
 
-        for h in range(3): #Range over h for next period
-            # Choice specific value
-            v_plus[h,:] = tools.interp_2d_vec(par.grid_m,par.grid_p,sol.v[t+1,h], m_plus, k_plus)
-            # Choice specific consumption    
-            c_plus[h,:] = tools.interp_2d_vec(par.grid_m,par.grid_p,sol.c[t+1,h], m_plus, k_plus)
-            # Choice specific Marginal utility
-            marg_u_plus[h,:] = marg_util(c_plus[i,:], par) 
-       
-        # Expected value
-        V_plus, prob = logsum(v_plus[0],v_plus[1],v_plus[2],par.sigma_epsilon) 
-        w_raw = w*np.reshape(V_plus,(par.Na,par.Nxi))
-        w_raw = np.sum(w_raw,1)
-        marg_u_plus = prob[0,:]*marg_u_plus[0] + prob[1,:]*marg_u_plus[1]  + prob[2,:]*marg_u_plus[2]
+    for h in range(3): #Range over h for next period
+        # Choice specific value
+        v_plus[h,:] = tools.interp_2d_vec(par.grid_m,par.grid_p,sol.v[t+1,h], m_plus, k_plus)
+        # Choice specific consumption    
+        c_plus[h,:] = tools.interp_2d_vec(par.grid_m,par.grid_p,sol.c[t+1,h], m_plus, k_plus)
+        # Choice specific Marginal utility
+        marg_u_plus[h,:] = marg_util(c_plus[i,:], par) 
 
-        #Expected  average marg. utility
-        avg_marg_u_plus = w*np.reshape(marg_u_plus,(par.Na,par.Nxi))
-        avg_marg_u_plus = np.sum(avg_marg_u_plus ,1)
+    # Expected value
+    V_plus, prob = logsum(v_plus[0],v_plus[1],v_plus[2],par.sigma_epsilon) 
+    w_raw = w*np.reshape(V_plus,(par.Na,par.Nxi))
+    w_raw = np.sum(w_raw,1)
+    marg_u_plus = prob[0,:]*marg_u_plus[0] + prob[1,:]*marg_u_plus[1]  + prob[2,:]*marg_u_plus[2]
 
-        # raw c, m and v: 
-        c_raw = inv_marg_util(par.beta*(1+par.r)*avg_marg_u_plus,par)
-        m_raw = c_raw + par.grid_a[t,:]
-        v_raw = c_raw
+    #Expected  average marg. utility
+    avg_marg_u_plus = w*np.reshape(marg_u_plus,(par.Na,par.Nxi))
+    avg_marg_u_plus = np.sum(avg_marg_u_plus ,1)
+
+    # takes the raw consumption, m and v
+    # raw c, m and v: 
+    c_raw = inv_marg_util(par.beta*(1+par.r)*avg_marg_u_plus,par)
+    m_raw = c_raw + par.grid_a[t,:]
+    v_raw = c_raw
    
-        # Upper Envelope
-        c,v = upper_envelope(t,h_plus,c_raw,m_raw,w_raw,par)
+    #These are used in the upper envelope to find the optimal consumotion and value!
+    # Upper Envelope
+    c,v = upper_envelope(t,h_plus,c_raw,m_raw,w_raw,par)
     
-        return w_raw, avg_marg_u_plus, c,v
+    return w_raw, avg_marg_u_plus, c,v
 
 # We use out upper envelope theory:
 # This is because Euler-eqution is necessary but not sufficient, since value function is not strictly concave.
