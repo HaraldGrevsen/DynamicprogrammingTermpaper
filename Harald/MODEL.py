@@ -1,7 +1,8 @@
 # import packages 
-import DCEGM
+import DCEGM as DCEGM 
+
 import numpy as np
-import tools
+import tools as tools
 from types import SimpleNamespace
 import math
 
@@ -70,7 +71,8 @@ class TheModel():
         par.Nm  = 150
         #points in Gauss_Hermite
         par.Nxi = 4
-        
+        par.Nm_b = 50
+
     def create_grids(self):
 
         par = self.par
@@ -98,7 +100,8 @@ class TheModel():
         #par.grid_m = np.nan + np.zeros([par.T,par.Nm])
         #for t in range(par.T):
         #    par.grid_m[t,:] = tools.nonlinspace(0+1e-8,par.m_max,par.Nm,par.m_phi)
-        par.grid_m =  tools.nonlinspace(0+1e-4,par.m_max,par.Nm,par.m_phi)
+        par.grid_m =  np.concatenate([np.linspace(0+1e-6,1-1e-6,par.Nm_b), tools.nonlinspace(1+1e-6,par.m_max,par.Nm-par.Nm_b,par.m_phi)])
+        #par.grid_m =  tools.nonlinspace(0+1e-4,par.m_max,par.Nm,par.m_phi)
         # Set seed
         np.random.seed(2021)
                 
@@ -146,16 +149,16 @@ class TheModel():
         #Before last period
 
         for t in range(par.T-2,-1,-1): #range(start, stop, step)
-            for i_h in range(3):
+            for h in range(3):
                 #INTERPOLATE?
                 for i_a in range(par.Na):
                     #Choice specific function
                     for i_k, k in enumerate(par.grid_k):
                         # Solve model with EGM
-                        c,v,m = model.DCEGM(sol,i_h,i_k,t,par)
-                        sol.m[par.t,i_a,i_k,i_h] = m
-                        sol.c[par.t,i_a,i_k,i_h] = c
-                        sol.v[par.t,i_a,i_k,i_h] = v                        
+                        c,v,m = DCEGM.DCEGM_(sol,h,k,t,par)
+                        sol.m[par.t,i_a,i_k,h] = m
+                        sol.c[par.t,i_a,i_k,h] = c
+                        sol.v[par.t,i_a,i_k,h] = v                        
      
     
     

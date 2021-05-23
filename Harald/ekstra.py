@@ -1,0 +1,3 @@
+import DCEGM as DCEGM
+
+DCEGM(2,3,4)
