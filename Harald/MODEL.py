@@ -40,9 +40,9 @@ class TheModel():
 
     def setup(self):
         par = self.par
-        par.T = 60
-        par.Tsp = 65
-        par.Top = 62
+        par.T = 60  # Number for years, from 20 to 80
+        par.Ts = 45  # Number of years before public pension payouts
+        par.To = 42  # Number of years before occupational pension payouts
     
         # Our Model parameters
         par.zeta = 0.8
@@ -52,7 +52,7 @@ class TheModel():
         par.phi1 = 1.1
         par.phi2 = 1.1
         par.alpha = 1.8
-        par.sigma_xi = 0.1   #THIS IS FOR WAGE (MIGHT BE CALLED SIGMA_W)
+        par.sigma_xi = 0.1   # THIS IS FOR WAGE (MIGHT BE CALLED SIGMA_W)
         par.sigma_epsilon = 0.3
         par.kappa = 0.1
         par.r = 0.04
@@ -144,7 +144,8 @@ class TheModel():
                     #m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi                 
                     
         #Before last period
-        for t in range(par.T-2,-1,-1):
+
+        for t in range(par.T-2,-1,-1): #range(start, stop, step)
             for i_h in range(3):
                 #INTERPOLATE?
                 for i_a in range(par.Na):
