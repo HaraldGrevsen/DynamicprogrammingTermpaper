@@ -1,6 +1,5 @@
 # import packages 
 import DCEGM as DCEGM 
-
 import numpy as np
 import tools as tools
 from types import SimpleNamespace
@@ -72,6 +71,10 @@ class TheModel():
         #points in Gauss_Hermite
         par.Nxi = 4
         par.Nm_b = 50
+        
+        
+        #Grid for different h
+        par.h = [0,0.5,1]
 
     def create_grids(self):
 
@@ -109,29 +112,28 @@ class TheModel():
         # Initialize
         par = self.par
         sol = self.sol
-        xi = np.tile(par.xi,par.Na)
 
-        shape=(par.T,3,par.Nm)
+        shape=(par.T,par.Na,par.Nk,3)
         sol.m = np.nan+np.zeros(shape)
         sol.c = np.nan+np.zeros(shape)
         sol.v = np.nan+np.zeros(shape)
         
         #Last period, consume all
-        for h in range(3):
-            sol.m[par.T-1,h,:] = par.grid_m
-            sol.c[par.T-1,h,:] = par.grid_m
-            sol.v[par.T-1,h,:] = DCEGM.util(sol.c[par.T-1,h,:],h,par)
+        #for h in range(3):
+        #    sol.m[par.T-1,h,:] = par.grid_m
+        #    sol.c[par.T-1,h,:] = par.grid_m
+        #    sol.v[par.T-1,h,:] = DCEGM.util(sol.c[par.T-1,h,:],h,par)
 
         # In our last period the agent will consume all!
         # Last period, (= consume all) 
-        #for i_a in range(par.Na):
-        #    for i_k in range(par.Nk):
-        #        for h in range(3):
+        for i_a in range(par.Na):
+            for i_k in range(par.Nk):
+                for i_h in range(3):
                     #Her forsøg uden P og S!
-        #            m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi 
-        #            sol.m[par.T-1,i_a,i_k,h] = m
-        #            sol.c[par.T-1,i_a,i_k,h] = c
-        #            sol.v[par.T-1,i_a,i_k,h] = v
+                    m = par.grid_a[i_a] * (1+par.r)  + par.h[i_h] * par.kappa * par.grid_k[i_k] #* par.xi + par.P + par.rho*par.grid_k[i_k]
+                    sol.m[par.T-1,i_a,i_k,i_h] = m
+                    sol.c[par.T-1,i_a,i_k,par.h[i_h]] = m
+                    sol.v[par.T-1,i_a,i_k,par.h[i_h]] = DCEGM.util(sol.c[par.T-1,par.h[i_h],:],par.h[i_h],par)
                 #sol.m[par.T-1,i_m,h] = par.grid_m[i_m,:]
                 #sol.c[par.T-1,i_a,i_k,h] = par.grid_m[i_m,:]
                 #sol.v[par.T-1,i_a,i_k,h] = egm.util(sol.c[par.T-1,i_m,h],h,par) 
@@ -160,8 +162,6 @@ class TheModel():
                         sol.c[par.t,i_a,i_k,h] = c
                         sol.v[par.t,i_a,i_k,h] = v                        
      
-    
-    
     
     
     

@@ -10,18 +10,18 @@ def DCEGM_(sol,h,k,t,par):
     #NEED CODE FOR P & S!
     #FINDING THE WAR FILES
     xi = np.tile(par.xi,par.Na)
-    a = np.repeat(par.grid_a[t],par.Nxi) 
+    a = np.repeat(par.grid_a[t],par.Nxi)
     w = np.tile(par.xi_w,(par.Na,1))
-    k = np.repeat(k,par.Na) 
+    k = np.repeat(k,par.Na)
     
     # Next period states
     k_plus = k + par.phi1*h**par.phi2
-    
+
     # We need to include P and S, in the first round i try including them both at age Tsp(65)
     if t > 65:    #par.Ts
         m_plus = (1+par.r)*a+ par.kappa*xi*k*h + par.P + par.rho * k_plus
     else:
-        m_plus = a# (1+par.r)*a+ par.kappa*xi*k*h 
+        m_plus = (1+par.r)*a+ par.kappa*xi*k*h 
     
     # Value, consumption, marg_util
     shape = (2,m_plus.size)
@@ -36,7 +36,7 @@ def DCEGM_(sol,h,k,t,par):
         # Choice specific consumption    
         c_plus[h,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t+1,h], m_plus, k_plus)
         # Choice specific Marginal utility
-        marg_u_plus[h,:] = marg_util(c_plus[h,:], par) 
+        marg_u_plus[h,:] = marg_util(c_plus[h,:],par) 
 
     # Expected value
     V_plus, prob = logsum(v_plus[0],v_plus[1],v_plus[2],par.sigma_epsilon) 
