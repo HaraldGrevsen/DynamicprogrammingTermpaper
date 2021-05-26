@@ -3,49 +3,49 @@ import numpy as np
 import tools
 
 #This is our EGM-function:
-def DCEGM_(sol,h,k,t,par): 
+def DCEGM_(sol,h,a,k,t,par): 
 # We need to look at their working fucntion since this is the choice with discrete choices!
 #this is the code for that
     #First this code finds w-raw, avg. marginal utility:
     #NEED CODE FOR P & S!
     #FINDING THE WAR FILES
-    xi = np.tile(par.xi,par.Na)
-    a = np.repeat(par.grid_a[t],par.Nxi)
-    w = np.tile(par.xi_w,(par.Na,1))
-    k = np.repeat(k,par.Na)
+    #xi = np.tile(par.xi,par.Na)
+    #w = np.tile(par.xi_w,(par.Na,1))
+    #a = np.repeat(par.grid_a[t],par.Nxi)
+    #k = np.repeat(k,par.Na)    
     
     # Next period states
     k_plus = k + par.phi1*h**par.phi2
 
     # We need to include P and S, in the first round i try including them both at age Tsp(65)
-    if t > 65:    #par.Ts
-        m_plus = (1+par.r)*a+ par.kappa*xi*k*h + par.P + par.rho * k_plus
+    if t > 45:    #par.Ts
+        m_plus = (1+par.r)*a+ par.kappa*par.xi*k*h + par.P + par.rho * k_plus
     else:
-        m_plus = (1+par.r)*a+ par.kappa*xi*k*h 
+        m_plus = (1+par.r)*a+ par.kappa*par.xi*k*h 
     
     # Value, consumption, marg_util
-    shape = (2,m_plus.size)
+    shape = (3,m_plus.size)
     v_plus = np.nan+np.zeros(shape)
     c_plus = np.nan+np.zeros(shape)
     marg_u_plus = np.nan+np.zeros(shape)
 
     # next period ressources given todays work (m_plus)
-    for h in range(3): #Range over h for next period
+    for h_plus in range(3): #Range over h for next period
         # Choice specific value
-        v_plus[h,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,h], m_plus, k_plus)
+        v_plus[h_plus,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,h_plus], m_plus, k_plus)
         # Choice specific consumption    
-        c_plus[h,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t+1,h], m_plus, k_plus)
+        c_plus[h_plus,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t+1,h_plus], m_plus, k_plus)
         # Choice specific Marginal utility
-        marg_u_plus[h,:] = marg_util(c_plus[h,:],par) 
+        marg_u_plus[h_plus,:] = marg_util(c_plus[h_plus,:],par) 
 
     # Expected value
     V_plus, prob = logsum(v_plus[0],v_plus[1],v_plus[2],par.sigma_epsilon) 
-    w_raw = w*np.reshape(V_plus,(par.Na,par.Nxi))
+    w_raw = par.xi_w*np.reshape(V_plus,(par.Na,par.Nxi))
     w_raw = np.sum(w_raw,1)
     marg_u_plus = prob[0,:]*marg_u_plus[0] + prob[1,:]*marg_u_plus[1]  + prob[2,:]*marg_u_plus[2]
 
     #Expected  average marg. utility
-    avg_marg_u_plus = w*np.reshape(marg_u_plus,(par.Na,par.Nxi))
+    avg_marg_u_plus = par.xi_w*np.reshape(marg_u_plus,(par.Na,par.Nxi))
     avg_marg_u_plus = np.sum(avg_marg_u_plus ,1)
 
     # takes the raw consumption, m and v
@@ -58,7 +58,7 @@ def DCEGM_(sol,h,k,t,par):
     # Upper Envelope
     c,v = upper_envelope(t,h,c_raw,m_raw,w_raw,par)
     
-    return c,v
+    return c,v #,m?
 
 # We use out upper envelope theory:
 # This is because Euler-eqution is necessary but not sufficient, since value function is not strictly concave.
@@ -133,7 +133,7 @@ def marg_util(c,par):
     return c**(-par.zeta)
 
 def inv_marg_util(u,par):
-    return u**(-1/par.rho)
+    return u**(-1/par.zeta)
 
 # Her finder vi logsum, som skyldes at der er extreme value taste shocks!
 def logsum(v1,v2,v3,sigma):
