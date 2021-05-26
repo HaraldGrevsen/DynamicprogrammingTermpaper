@@ -117,6 +117,9 @@ def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
     #FUNCTIONS; These represent our utility function, the marginal utility (plus inverse) and the logsum fucntion!
 #this is the utility function, which is u!
 def util(c,h,par):
+    return ((c**(1.0-par.zeta)-1)/(1-par.zeta))-par.b*((h**(par.alpha))/(par.alpha))
+
+def util2(c,h,par):  #backup
     if   h == 0:
          u = (c**(1.0-par.zeta)-1)/(1-par.zeta)
     elif h == 1:
