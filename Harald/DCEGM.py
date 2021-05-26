@@ -32,9 +32,9 @@ def DCEGM_(sol,h,a,k,t,par):
     # next period ressources given todays work (m_plus)
     for h_plus in range(3): #Range over h for next period
         # Choice specific value
-        v_plus[h_plus,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,h_plus], m_plus, k_plus)
+        v_plus[h_plus,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,a,k,h_plus], m_plus, k_plus)
         # Choice specific consumption    
-        c_plus[h_plus,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t+1,h_plus], m_plus, k_plus)
+        c_plus[h_plus,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,a,k,h_plus], m_plus, k_plus)
         # Choice specific Marginal utility
         marg_u_plus[h_plus,:] = marg_util(c_plus[h_plus,:],par) 
 

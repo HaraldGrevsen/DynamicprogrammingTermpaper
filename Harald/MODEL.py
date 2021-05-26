@@ -154,12 +154,13 @@ class TheModel():
         for t in range(par.T-2,-1,-1): #range(start, stop, step)
             for i_a in range(par.Na):            
                 for i_k in range(par.Nk):
+                    for i_h in range(3):
                 #INTERPOLATE?
                     # Solve model with EGM
-                    c,v,m = DCEGM.DCEGM_(sol,h,k,t,par)
-                    sol.m[par.t,i_a,i_k] = m
-                    sol.c[par.t,i_a,i_k] = c
-                    sol.v[par.t,i_a,i_k] = v                        
+                        c,v,m = DCEGM.DCEGM_(sol,i_h,i_a,i_k,t,par)
+                        sol.m[par.t,i_a,i_k,i_h,:] = m
+                        sol.c[par.t,i_a,i_k,i_h,:] = c
+                        sol.v[par.t,i_a,i_k,i_h,:] = v                        
     
     def solve22(self):
         # Initialize
