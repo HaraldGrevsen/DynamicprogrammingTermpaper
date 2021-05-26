@@ -113,7 +113,7 @@ class TheModel():
         par = self.par
         sol = self.sol
 
-        shape=(par.T,par.Na,par.Nk,3,par.Nxi)
+        shape=(par.T,par.Na,par.Nk,3,par.Nm)
         sol.m = np.nan+np.zeros(shape)
         sol.c = np.nan+np.zeros(shape)
         sol.v = np.nan+np.zeros(shape)
@@ -151,15 +151,15 @@ class TheModel():
                     #Her forsøg uden P og S!
                     #m = par.grid_a[i_a,:] * (1+par.r) + i_h * par.kappa * par.grid_k[i_k,:] * par.xi                 
         #Before last period
-        #for t in range(par.T-2,-1,-1): #range(start, stop, step)
-        #    for i_a in range(par.Na):            
-        #        for i_k in range(par.Nk):
-        #        #INTERPOLATE?
-        #            # Solve model with EGM
-        #            c,v,m = DCEGM.DCEGM_(sol,h,k,t,par)
-        #            sol.m[par.t,i_a,i_k] = m
-        #            sol.c[par.t,i_a,i_k] = c
-        #            sol.v[par.t,i_a,i_k] = v                        
+        for t in range(par.T-2,-1,-1): #range(start, stop, step)
+            for i_a in range(par.Na):            
+                for i_k in range(par.Nk):
+                #INTERPOLATE?
+                    # Solve model with EGM
+                    c,v,m = DCEGM.DCEGM_(sol,h,k,t,par)
+                    sol.m[par.t,i_a,i_k] = m
+                    sol.c[par.t,i_a,i_k] = c
+                    sol.v[par.t,i_a,i_k] = v                        
     
     def solve22(self):
         # Initialize

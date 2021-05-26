@@ -52,13 +52,14 @@ def DCEGM_(sol,h,a,k,t,par):
     # raw c, m and v: 
     c_raw = inv_marg_util(par.beta*(1+par.r)*avg_marg_u_plus,par)
     m_raw = c_raw + par.grid_a[t,:]
-    v_raw = c_raw
+    m = m_raw
+    #v_raw = c_raw
    
     #These are used in the upper envelope to find the optimal consumotion and value!
     # Upper Envelope
     c,v = upper_envelope(t,h,c_raw,m_raw,w_raw,par)
     
-    return c,v #,m?
+    return c,v,m
 
 # We use out upper envelope theory:
 # This is because Euler-eqution is necessary but not sufficient, since value function is not strictly concave.
@@ -69,7 +70,7 @@ def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
 
     c_raw = np.append(1e-6,c_raw) 
     m_raw = np.append(1e-6,m_raw) 
-    v_raw = np.append(w_raw[0],v_raw)
+    #v_raw = np.append(w_raw[0],v_raw)
     w_raw = np.append(w_raw[0],w_raw)
     a_raw = np.append(0,par.grid_a[t,:]) 
 
