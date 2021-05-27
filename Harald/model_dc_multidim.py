@@ -46,15 +46,15 @@ class model_dc_multidim():
         par.a_max = 10
         par.a_phi = 1.1  # Curvature parameters
         #par.k_max = par.phi1*par.T
-        par.k_max = 13
+        par.k_max = 10
         par.k_phi = 1.1 # Curvature parameters
 
         par.Nw = 4
-        par.Nm = 150
-        par.Na = 150
-        par.Nk = 150
+        par.Nm = 50
+        par.Na = 50
+        par.Nk = 50
 
-        par.Nm_b = 50
+        par.Nm_b = 20
         
         #Simulation
         par.m_ini = 2.5 # initial m in simulation
@@ -81,8 +81,8 @@ class model_dc_multidim():
             par.grid_a[t,:] = tools.nonlinspace(0+1e-6,par.a_max,par.Na,par.a_phi)
 
         # Cash-on-hand
-        par.grid_m =  np.concatenate([np.linspace(0+1e-6,1-1e-6,par.Nm_b), tools.nonlinspace(1+1e-6,par.m_max,par.Nm-par.Nm_b,par.m_phi)])    
-
+        #par.grid_m =  np.concatenate([np.linspace(0+1e-6,1-1e-6,par.Nm_b), tools.nonlinspace(1+1e-6,par.m_max,par.Nm-par.Nm_b,par.m_phi)])    
+        par.grid_m = tools.nonlinspace(0+1e-4,par.m_max,par.Nm,par.m_phi)
         # Human capital
         par.grid_k = tools.nonlinspace(0+1e-4,par.k_max,par.Nk,par.k_phi)
 

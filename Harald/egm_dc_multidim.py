@@ -58,8 +58,6 @@ def EGM (sol,h,k,t,par):
     return c,v
 
 
-
-
 def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
     
     # Add a point at the bottom
@@ -114,7 +112,7 @@ def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
 
 # FUNCTIONS
 def util(c,h,par):
-    return (c**(1.0-par.zeta)-1)/(1.0-par.zeta)-(par.b*h**par.alpha)/par.alpha
+    return ((c**(1.0-par.zeta)-1)/(1.0-par.zeta))-((par.b*h**par.alpha)/par.alpha)
 #def util(c,h,par):
 #    return (pow(c,(1.0-par.zeta))-1)/(1.0-par.zeta)-(par.b*h**par.alpha)/par.alpha
 
