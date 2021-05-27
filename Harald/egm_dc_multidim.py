@@ -31,9 +31,9 @@ def EGM (sol,h,k,t,par):
     
 
     for i in range(3): #Range over working full-time, part-time and not working next period
-        # Choice specific value
+        print (i)# Choice specific value
         v_plus[i,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,i], m_plus, k_plus)
-    
+        print(v_plus[i,:])
         # Choice specific consumption    
         c_plus[i,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t+1,i], m_plus, k_plus)
        

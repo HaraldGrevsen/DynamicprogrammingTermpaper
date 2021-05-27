@@ -55,6 +55,14 @@ class model_dc_multidim():
 
         par.Nm_b = 50
         
+        #Simulation
+        par.m_ini = 2.5 # initial m in simulation
+        par.k_ini = 2.5
+        par.simN = 500000 # number of persons in simulation
+        par.simT = 100 # number of periods in simulation
+        par.simlifecycle = 0 # = 0 simulate infinite horizon model
+        par.simT = par.T
+        par.simlifecycle = 1
 
     def create_grids(self):
 
@@ -113,55 +121,4 @@ class model_dc_multidim():
                     sol.v[t,h,:,i_k] = v
                 
 
-    def simulate (self):
 
-        par = self.par
-        sol = self.sol
-        sim = self.sim
-
-        # Initialize
-        shape = (par.simT, par.simN)
-        sim.m = np.nan +np.zeros(shape)
-        sim.c = np.nan +np.zeros(shape)
-        sim.a = np.nan +np.zeros(shape)
-        sim.p = np.nan +np.zeros(shape)
-        sim.y = np.nan +np.zeros(shape)
-
-        # Shocks
-        shocki = np.random.choice(par.Nshocks,(par.T,par.simN),replace=True,p=par.w) #draw values between 0 and Nshocks-1, with probability w
-        sim.psi = par.psi_vec[shocki]
-        sim.xi = par.xi_vec[shocki]
-
-            #check it has a mean of 1
-        assert (abs(1-np.mean(sim.xi)) < 1e-4), 'The mean is not 1 in the simulation of xi'
-        assert (abs(1-np.mean(sim.psi)) < 1e-4), 'The mean is not 1 in the simulation of psi'
-
-        # Initial values
-        sim.m[0,:] = par.sim_mini
-        sim.p[0,:] = 0.0
-
-        # Simulation 
-        for t in range(par.simT):
-            if par.simlifecycle == 0:
-                sim.c[t,:] = tools.interp_linear_1d(sol.m[0,:],sol.c[0,:], sim.m[t,:])
-            else:
-                sim.c[t,:] = tools.interp_linear_1d(sol.m[t,:],sol.c[t,:], sim.m[t,:])
-            
-            sim.a[t,:] = sim.m[t,:] - sim.c[t,:]
-
-            if t< par.simT-1:
-                if t+1 > par.Tr: #after pension
-                    sim.m[t+1,:] = (1+par.r)*sim.a[t,:]/(par.G*par.L[t])+1
-                    sim.p[t+1,:] = np.log(par.G)+np.log(par.L[t])+sim.p[t,:]
-                    sim.y[t+1,:] = sim.p[t+1,:]
-                else:       #before pension
-                    sim.m[t+1,:] = par.R*sim.a[t,:]/(par.G*par.L[t]*sim.psi[t+1,:])+sim.xi[t+1,:]
-                    sim.p[t+1,:] = np.log(par.G)+np.log(par.L[t])+sim.p[t,:]+np.log(sim.psi[t+1,:])
-                    sim.y[t+1,:] = sim.p[t+1,:]+np.log(sim.xi[t+1,:])
-        
-        #Renormalize 
-        sim.P = np.exp(sim.p)
-        sim.Y = np.exp(sim.y)
-        sim.M = sim.m*sim.P
-        sim.C = sim.c*sim.P
-        sim.A = sim.a*sim.P
