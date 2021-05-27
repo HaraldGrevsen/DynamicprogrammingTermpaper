@@ -28,30 +28,31 @@ class model_dc_multidim():
 
         # Model parameters
         par.zeta = 0.79
-        par.beta = 0.97
-        par.rho = 0.1
-        par.b = 1.2
+        par.beta = 0.95
+        par.rho = 0.08
+        par.b = 0.8
         par.phi1 = 0.2
         par.phi2 = 0.6
         par.alpha = 1.5
-        par.sigma_w = 0.1   # THIS IS FOR WAGE (MIGHT BE CALLED SIGMA_W)
+        par.sigma_w = 0.2   
         par.sigma_epsilon = 0.3
-        par.kappa = 1
+        par.kappa = 0.9
         par.r = 0.04
-        par.P = 1
+        par.P = 0.5
 
         # Grids and numerical integration
         par.m_max = 10
         par.m_phi = 1.1 # Curvature parameters
         par.a_max = 10
         par.a_phi = 1.1  # Curvature parameters
-        par.k_max = 2
+        #par.k_max = par.phi1*par.T
+        par.k_max = 13
         par.k_phi = 1.1 # Curvature parameters
 
         par.Nw = 4
         par.Nm = 150
         par.Na = 150
-        par.Nk = 100
+        par.Nk = 150
 
         par.Nm_b = 50
         
@@ -120,5 +121,3 @@ class model_dc_multidim():
                     sol.c[t,h,:,i_k] = c
                     sol.v[t,h,:,i_k] = v
                 
-
-

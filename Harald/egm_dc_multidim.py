@@ -10,7 +10,8 @@ def EGM (sol,h,k,t,par):
     w = np.tile(par.epsi_w,(par.Na,1))
 
     # Next period states
-    k_plus = k+par.phi1*pow(h,par.phi2)
+    k_plus = k+par.phi1*h**par.phi2
+    # k_plus = k+par.phi1*pow(h,par.phi2)
     
     # Income/transfers
     wage = par.kappa*k*epsi
@@ -29,16 +30,12 @@ def EGM (sol,h,k,t,par):
     c_plus = np.nan+np.zeros(shape)
     marg_u_plus = np.nan+np.zeros(shape)
     
-
     for i in range(3): #Range over working full-time, part-time and not working next period
-        print (i)# Choice specific value
         v_plus[i,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,i], m_plus, k_plus)
-        print(v_plus[i,:])
         # Choice specific consumption    
         c_plus[i,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t+1,i], m_plus, k_plus)
-       
         # Choice specific Marginal utility
-        marg_u_plus[i,:] = marg_u(c_plus[i,:], par) 
+        marg_u_plus[i,:] = marg_util(c_plus[i,:], par) 
        
     # Expected value
     V_plus, prob = logsum(v_plus[0],v_plus[1],v_plus[2],par.sigma_epsilon) 
@@ -118,16 +115,18 @@ def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
 # FUNCTIONS
 def util(c,h,par):
     return (c**(1.0-par.zeta)-1)/(1.0-par.zeta)-(par.b*h**par.alpha)/par.alpha
+#def util(c,h,par):
+#    return (pow(c,(1.0-par.zeta))-1)/(1.0-par.zeta)-(par.b*h**par.alpha)/par.alpha
 
+def marg_util(c,par):
+    return c**(-par.zeta)
 #def marg_util(c,par):
-#    return c**(-par.zeta)
-            
+#    return pow(c,-par.zeta)
+
 def inv_marg_util(u,par):
     return u**(-1/par.zeta)
-
-def marg_u(c, par):
-    return c**(-par.zeta)
-
+#def inv_marg_util(u,par):
+#    return pow(u,(-1/par.zeta))
 
 def logsum(v1,v2,v3,sigma):
 
