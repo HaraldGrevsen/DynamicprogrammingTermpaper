@@ -146,25 +146,25 @@ class model_dc_multidim():
         sim.m[0,:] = par.m_start
         sim.k[0,:] = par.k_start
         
-        shape_inter = (3,sim.m.size)
+        shape_inter = (3,par.simN)
         v_interp = np.nan + np.zeros(shape_inter)
         c_interp = np.nan + np.zeros(shape_inter)
         
         for t in range(par.simT):
             #for i in range(3): #Range over working full-time, part-time and not working next period  [t,:]
                     # Choice specific value
-            v_interp[1,:] = tools.interp_2d(par.grid_m,par.grid_k,sol.v[t,1], sim.m[t,:], sim.k[t,:])
-            v_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,2,:,:], sim.m[t,:], sim.k[t,:])
-            v_interp[3,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,3,:,:], sim.m[t,:], sim.k[t,:])
+            v_interp[0,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,0], sim.m[t,:], sim.k[t,:])
+            v_interp[1,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,1], sim.m[t,:], sim.k[t,:])
+            v_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,2], sim.m[t,:], sim.k[t,:])
     
                     # Choice specific consumption    
-            c_interp[1,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,1], sim.m, sim.k)
-            c_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,2], sim.m, sim.k)
-            c_interp[3,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,3], sim.m, sim.k)
+            c_interp[0,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,0], sim.m[t,:], sim.k[t,:])
+            c_interp[1,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,1], sim.m[t,:], sim.k[t,:])
+            c_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,2], sim.m[t,:], sim.k[t,:])
        
             # Probabilities
-            _, prob = egm.logsum(v_interp[1],v_interp[2],v_interp[3],par.sigma_epsilon) 
-
+            _, prob = egm.logsum(v_interp[0],v_interp[1],v_interp[2],par.sigma_epsilon) 
+            
             if par.eps_ts[t,:] <= prob[2,:]:
                 F = 1
             if par.eps_ts[t,:] <= prob[2,:] +  prob[1,:]:
@@ -199,36 +199,4 @@ class model_dc_multidim():
             if t < par.T:
                 sim.k[t+1,:] = sim.k[t,:]+par.phi1*pow(sim.h[t,:],par.phi2)
                 sim.m[t+1,:] = (1+par.r)*sim.a[t,:]+sim.h[t,:]*sim.wage[t,:]+sim.s[t,:]+sim.p[t,:]
-        return sim           
-
-
-    def simulate2 (self):
-
-        par = self.par
-        sol = self.sol
-        sim = self.sim
-
-        # Initialize
-        shape = (par.simT, par.simN)
-        sim.m = np.nan +np.zeros(shape)
-        sim.k = np.nan +np.zeros(shape)
-        sim.c = np.nan +np.zeros(shape)
-        sim.h = np.nan +np.zeros(shape)
-        sim.a = np.nan +np.zeros(shape)
-        sim.s = np.nan +np.zeros(shape)
-        sim.p = np.nan +np.zeros(shape)
-        sim.wage = np.nan +np.zeros(shape)
-        
-        # Shocks used
-        par.eps_w = np.random.lognormal(0,par.sigma_w,shape)
-        par.eps_ts = np.random.rand(par.simT, par.simN)
-
-        # Initial values
-        sim.m[0,:] = par.m_start
-        sim.k[0,:] = par.k_start
-        
-        shape_inter = (3,sim.m.size)
-        v_interp = np.nan+np.zeros(shape_inter)
-        c_interp = np.nan +np.zeros(shape_inter)
-    
         return sim           
