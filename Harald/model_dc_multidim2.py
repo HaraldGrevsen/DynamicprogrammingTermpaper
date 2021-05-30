@@ -51,14 +51,14 @@ class model_dc_multidim():
         par.Nw = 4
         par.Nm = 50
         par.Na = 50
-        par.Nk = 20
+        par.Nk = 50
 
         par.Nm_b = 10
         
         # Simulation
         par.m_start = 1.5 # initial m in simulation
         par.k_start = 0.5 #initial k in simulation
-        par.simN = 500 # number of persons in simulation
+        par.simN = 50 # number of persons in simulation
         par.simT = par.T # number of periods in simulation
         par.simlifecycle = 1 # = 0 simulate infinite horizon model
         
@@ -146,20 +146,24 @@ class model_dc_multidim():
         sim.m[0,:] = par.m_start
         sim.k[0,:] = par.k_start
         
-        shape_inter = (3,par.simT,sim.m.size)
+        shape_inter = (3,sim.m.size)
         v_interp = np.nan + np.zeros(shape_inter)
         c_interp = np.nan + np.zeros(shape_inter)
         
         for t in range(par.simT):
-            for i in range(3): #Range over working full-time, part-time and not working next period  [t,:]
+            #for i in range(3): #Range over working full-time, part-time and not working next period  [t,:]
                     # Choice specific value
-                        v_interp[i,t,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,i], sim.m[t,:], sim.k[t,:])
+            v_interp[1,:] = tools.interp_2d(par.grid_m,par.grid_k,sol.v[t,1], sim.m[t,:], sim.k[t,:])
+            v_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,2,:,:], sim.m[t,:], sim.k[t,:])
+            v_interp[3,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,3,:,:], sim.m[t,:], sim.k[t,:])
     
                     # Choice specific consumption    
-                        c_interp[i,t,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,i], sim.m, sim.k)
+            c_interp[1,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,1], sim.m, sim.k)
+            c_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,2], sim.m, sim.k)
+            c_interp[3,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,3], sim.m, sim.k)
        
             # Probabilities
-            _, prob = egm.logsum(v_interp[0],v_interp[1],v_interp[2],par.sigma_epsilon) 
+            _, prob = egm.logsum(v_interp[1],v_interp[2],v_interp[3],par.sigma_epsilon) 
 
             if par.eps_ts[t,:] <= prob[2,:]:
                 F = 1
