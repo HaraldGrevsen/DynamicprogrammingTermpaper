@@ -2,6 +2,7 @@ import numpy as np
 from numba import njit, int64, double, boolean, int32,void
 import math
 
+
 # interpolation functions:
 @njit(int64(int64,int64,double[:],double))
 def binary_search(imin,Nx,x,xi):
@@ -176,6 +177,18 @@ def GaussHermite_lognorm(sigma,n):
 
     x, w = gauss_hermite(n)
     x = np.exp(x*math.sqrt(2)*sigma - 0.5*sigma**2)
+    w = w / math.sqrt(math.pi)
+
+    # assert a mean of one
+    assert(1 - np.sum(w*x) < 1e-8 ), 'The mean in GH-lognorm is not 1'
+    return x, w
+
+
+
+def GaussHermite_lognorm2(sigma,n):
+
+    x, w = gauss_hermite(n)
+    x = np.exp(x*math.sqrt(2)*sigma)
     w = w / math.sqrt(math.pi)
 
     # assert a mean of one

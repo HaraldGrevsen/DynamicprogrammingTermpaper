@@ -10,32 +10,41 @@ def EGM (sol,h,k,t,par):
     w = np.tile(par.epsi_w,(par.Na,1))
 
     # Next period states
-    k_plus = k+par.phi1*h**par.phi2
-    # k_plus = k+par.phi1*pow(h,par.phi2)
+    k_plus = par.phi3*(k+par.phi1*pow(par.hlist[h],par.phi2))
     
     # Income/transfers
     wage = par.kappa*k*epsi
     S_plus = par.rho*k_plus
     
-    if t < par.To:
-        m_plus = (1+par.r)*a + h*wage
-    if t >= par.Tp:
-        m_plus = (1+par.r)*a + h*wage + par.P + S_plus
+    if t < par.To - 1:
+        m_plus = (1+par.r)*a + par.hlist[h]*wage
+    if t >= par.Tp - 1:
+        if h == 0:
+            m_plus = (1+par.r)*a + par.P + S_plus
+        else:
+            m_plus = (1+par.r)*a + par.hlist[h]*wage   
     else:
-        m_plus = (1+par.r)*a + h*wage + S_plus
-    
+        if h == 0:
+            m_plus = (1+par.r)*a + S_plus
+        else:
+            m_plus = (1+par.r)*a + par.hlist[h]*wage 
+
     # Value, consumption, marg_util
     shape = (3,m_plus.size)
     v_plus = np.nan+np.zeros(shape)
     c_plus = np.nan+np.zeros(shape)
     marg_u_plus = np.nan+np.zeros(shape)
     
+
     for i in range(3): #Range over working full-time, part-time and not working next period
+        # Choice specific value
         v_plus[i,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t+1,i], m_plus, k_plus)
+    
         # Choice specific consumption    
         c_plus[i,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t+1,i], m_plus, k_plus)
+       
         # Choice specific Marginal utility
-        marg_u_plus[i,:] = marg_util(c_plus[i,:], par) 
+        marg_u_plus[i,:] = marg_u(c_plus[i,:], par) 
        
     # Expected value
     V_plus, prob = logsum(v_plus[0],v_plus[1],v_plus[2],par.sigma_epsilon) 
@@ -56,6 +65,8 @@ def EGM (sol,h,k,t,par):
     c,v = upper_envelope(t,h,c_raw,m_raw,w_raw,par)
     
     return c,v
+
+
 
 
 def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
@@ -89,7 +100,7 @@ def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
         for j, m_now in enumerate(par.grid_m):
 
             interp = (m_now >= m_low) and (m_now <= m_high) 
-            extrap_above = (i == size_m_raw-1) and (m_now > m_high)
+            extrap_above = (i == size_m_raw-2) and (m_now > m_high)
 
             if interp or extrap_above:
                 # Consumption
@@ -112,19 +123,17 @@ def upper_envelope(t,h,c_raw,m_raw,w_raw,par):
 
 # FUNCTIONS
 def util(c,h,par):
-    return ((c**(1.0-par.zeta)-1)/(1.0-par.zeta))-((par.b*h**par.alpha)/par.alpha)
-#def util(c,h,par):
-#    return (pow(c,(1.0-par.zeta))-1)/(1.0-par.zeta)-(par.b*h**par.alpha)/par.alpha
+    return (c**(1.0-par.zeta)-1)/(1.0-par.zeta)-(par.b*par.hlist[h]**par.alpha)/par.alpha
 
-def marg_util(c,par):
-    return c**(-par.zeta)
 #def marg_util(c,par):
-#    return pow(c,-par.zeta)
-
+#    return c**(-par.zeta)
+            
 def inv_marg_util(u,par):
     return u**(-1/par.zeta)
-#def inv_marg_util(u,par):
-#    return pow(u,(-1/par.zeta))
+
+def marg_u(c, par):
+    return c**(-par.zeta)
+
 
 def logsum(v1,v2,v3,sigma):
 

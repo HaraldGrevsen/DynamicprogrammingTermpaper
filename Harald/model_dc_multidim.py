@@ -19,34 +19,34 @@ class model_dc_multidim():
 
         par = self.par
 
-        par.T = 65  # Number for years, from 20 to 85
-        par.Tp = 45  # Number of years before public pension payouts
-        par.To = 42  # Number of years before occupational pension payouts
+        par.T = 55  # Number for years, from 25 to 80
+        par.Tp = 40  # Number of years before public pension payouts, age 65 
+        par.To = 35  # Number of years before occupational pension payouts, age 60
         
         # Discrete choices
         par.hlist = [0,0.5,1]
 
         # Model parameters
         par.zeta = 0.79
-        par.beta = 0.95
-        par.rho = 0.08
-        par.b = 0.8
+        par.beta = 0.97
+        par.rho = 0.1
+        par.b = 2
+        par.phi3 = 0.97
         par.phi1 = 0.2
         par.phi2 = 0.6
         par.alpha = 1.5
-        par.sigma_w = 0.2   
+        par.sigma_w = 0.1   # THIS IS FOR WAGE (MIGHT BE CALLED SIGMA_W)
         par.sigma_epsilon = 0.3
-        par.kappa = 0.9
+        par.kappa = 1
         par.r = 0.04
-        par.P = 0.5
+        par.P = 1
 
         # Grids and numerical integration
-        par.m_max = 10
+        par.m_max = 30
         par.m_phi = 1.1 # Curvature parameters
-        par.a_max = 10
+        par.a_max = 30
         par.a_phi = 1.1  # Curvature parameters
-        #par.k_max = par.phi1*par.T
-        par.k_max = 10
+        par.k_max = 30
         par.k_phi = 1.1 # Curvature parameters
 
         par.Nw = 4
@@ -54,16 +54,16 @@ class model_dc_multidim():
         par.Na = 50
         par.Nk = 50
 
-        par.Nm_b = 20
+        par.Nm_b = 10
         
-        #Simulation
-        par.m_ini = 2.5 # initial m in simulation
-        par.k_ini = 2.5
-        par.simN = 500000 # number of persons in simulation
-        par.simT = 100 # number of periods in simulation
-        par.simlifecycle = 0 # = 0 simulate infinite horizon model
-        par.simT = par.T
-        par.simlifecycle = 1
+        # Simulation
+        par.m_start = 2 # initial m in simulation
+        par.k_start = 1.5 #initial k in simulation
+        par.simN = 100000 # number of persons in simulation
+        par.simT = par.T # number of periods in simulation
+        par.simlifecycle = 1 # = 0 simulate infinite horizon model
+        
+        
 
     def create_grids(self):
 
@@ -81,13 +81,13 @@ class model_dc_multidim():
             par.grid_a[t,:] = tools.nonlinspace(0+1e-6,par.a_max,par.Na,par.a_phi)
 
         # Cash-on-hand
-        #par.grid_m =  np.concatenate([np.linspace(0+1e-6,1-1e-6,par.Nm_b), tools.nonlinspace(1+1e-6,par.m_max,par.Nm-par.Nm_b,par.m_phi)])    
-        par.grid_m = tools.nonlinspace(0+1e-4,par.m_max,par.Nm,par.m_phi)
+        par.grid_m =  np.concatenate([np.linspace(0+1e-6,1-1e-6,par.Nm_b), tools.nonlinspace(1+1e-6,par.m_max,par.Nm-par.Nm_b,par.m_phi)])    
+
         # Human capital
         par.grid_k = tools.nonlinspace(0+1e-4,par.k_max,par.Nk,par.k_phi)
 
         # Set seed
-        np.random.seed(2020)
+        np.random.seed(3)
 
     def solve(self):
         
@@ -117,7 +117,96 @@ class model_dc_multidim():
                 for h in range(3):
                 
                     # Solve model with EGM
-                    c,v = egm.EGM(sol,par.hlist[h],k,t,par)
+                    c,v = egm.EGM(sol,h,k,t,par)
                     sol.c[t,h,:,i_k] = c
                     sol.v[t,h,:,i_k] = v
+                    
                 
+    def simulate (self):
+
+        par = self.par
+        sol = self.sol
+        sim = self.sim
+
+        # Initialize
+        shape = (par.simT, par.simN)
+        sim.m = np.nan +np.zeros(shape)
+        sim.k = np.nan +np.zeros(shape)
+        sim.c = np.nan +np.zeros(shape)
+        sim.h = np.nan +np.zeros(shape)
+        sim.a = np.nan +np.zeros(shape)
+        sim.s = np.nan +np.zeros(shape)
+        sim.p = np.nan +np.zeros(shape)
+        sim.wage = np.nan +np.zeros(shape)
+        sim.disp = np.nan +np.zeros(shape)
+        sim.parti = np.nan +np.zeros(shape)
+
+        # Shocks used
+        par.eps_w = np.random.lognormal(0,par.sigma_w,shape)
+        par.eps_ts = np.random.rand(par.simT, par.simN)
+
+        # Initial values
+        sim.m[0,:] = par.m_start
+        sim.k[0,:] = par.k_start
+        sim.disp[0,:] = 0
+        
+        shape_inter = (3,par.simN)
+        v_interp = np.nan + np.zeros(shape_inter)
+        c_interp = np.nan + np.zeros(shape_inter)
+        
+        for t in range(par.simT):
+            #for i in range(3): #Range over working full-time, part-time and not working next period  [t,:]
+                    # Choice specific value
+            v_interp[0,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,0], sim.m[t,:], sim.k[t,:])
+            v_interp[1,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,1], sim.m[t,:], sim.k[t,:])
+            v_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.v[t,2], sim.m[t,:], sim.k[t,:])
+    
+                    # Choice specific consumption    
+            c_interp[0,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,0], sim.m[t,:], sim.k[t,:])
+            c_interp[1,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,1], sim.m[t,:], sim.k[t,:])
+            c_interp[2,:] = tools.interp_2d_vec(par.grid_m,par.grid_k,sol.c[t,2], sim.m[t,:], sim.k[t,:])
+       
+        
+            # Probabilities
+            _, prob = egm.logsum(v_interp[0],v_interp[1],v_interp[2],par.sigma_epsilon) 
+            
+            
+            sim.prob = prob
+            
+            for n in range(par.simN):
+                if par.eps_ts[t,n] <= prob[2,n]:
+                    sim.h[t,n] = 1 
+                    sim.c[t,n] = c_interp[2,n]
+                    sim.p[t,n] = 0
+                    sim.s[t,n] = 0
+                elif par.eps_ts[t,n] <= prob[2,n]+prob[1,n] and par.eps_ts[t,n] > prob[2,n]:
+                    sim.h[t,n] = 0.5
+                    sim.c[t,n] = c_interp[1,n]
+                    sim.p[t,n] = 0
+                    sim.s[t,n] = 0
+                else:
+                    sim.h[t,n] = 0
+                    sim.c[t,n] = c_interp[0,n]
+                    if t >= par.Tp - 1:
+                        sim.p[t,n] = par.P
+                        sim.s[t,n] = par.rho*sim.k[t,n]
+                    elif t < par.To - 1:
+                        sim.p[t,n] = 0
+                        sim.s[t,n] = 0
+                    else:
+                        sim.p[t,n] = 0
+                        sim.s[t,n] = par.rho*sim.k[t,n]
+                if par.eps_ts[t,n] <= prob[2,n] + prob[1,n]:
+                    sim.parti[t,n] = 1
+                else:
+                    sim.parti[t,n] = 0
+
+            sim.wage[t,:] = par.kappa * sim.k[t,:] * par.eps_w[t,:]
+            sim.a[t,:] = sim.m[t,:]-sim.c[t,:]
+            
+            if t < par.T-1:
+                sim.disp[t+1,:] = sim.h[t,:]*sim.wage[t,:]+sim.p[t,:]+sim.s[t,:]
+                sim.k[t+1,:] = par.phi3*(sim.k[t,:]+par.phi1*sim.h[t,:]**par.phi2)
+                sim.m[t+1,:] = (1+par.r)*sim.a[t,:]+sim.h[t,:]*sim.wage[t,:]+sim.s[t,:]+sim.p[t,:]
+                
+

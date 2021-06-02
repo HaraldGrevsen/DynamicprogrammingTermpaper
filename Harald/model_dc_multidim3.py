@@ -18,7 +18,7 @@ class model_dc_multidim():
 
         par = self.par
 
-        par.T = 50  # Number for years, from 25 to 75
+        par.T = 55  # Number for years, from 20 to 75
         par.Tp = 44  # Number of years before public pension payouts
         par.To = 39  # Number of years before occupational pension payouts
         
