@@ -173,7 +173,7 @@ def gauss_hermite(n):
 
     return x,w
 
-def GaussHermite_lognorm(sigma,n):
+def GaussHermite_lognorm2(sigma,n):
 
     x, w = gauss_hermite(n)
     x = np.exp(x*math.sqrt(2)*sigma - 0.5*sigma**2)
@@ -185,7 +185,7 @@ def GaussHermite_lognorm(sigma,n):
 
 
 
-def GaussHermite_lognorm2(sigma,n):
+def GaussHermite_lognorm(sigma,n):
 
     x, w = gauss_hermite(n)
     x = np.exp(x*math.sqrt(2)*sigma)

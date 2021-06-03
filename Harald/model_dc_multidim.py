@@ -50,16 +50,16 @@ class model_dc_multidim():
         par.k_phi = 1.1 # Curvature parameters
 
         par.Nw = 4
-        par.Nm = 50
-        par.Na = 50
-        par.Nk = 50
+        par.Nm = 150
+        par.Na = 150
+        par.Nk = 150
 
         par.Nm_b = 10
         
         # Simulation
         par.m_start = 2 # initial m in simulation
         par.k_start = 1.5 #initial k in simulation
-        par.simN = 100000 # number of persons in simulation
+        par.simN = 1000000 # number of persons in simulation
         par.simT = par.T # number of periods in simulation
         par.simlifecycle = 1 # = 0 simulate infinite horizon model
         
@@ -201,12 +201,12 @@ class model_dc_multidim():
                 else:
                     sim.parti[t,n] = 0
 
-            sim.wage[t,:] = par.kappa * sim.k[t,:] * par.eps_w[t,:]
+            sim.wage[t,:] = par.kappa * sim.k[t,:]
             sim.a[t,:] = sim.m[t,:]-sim.c[t,:]
             
             if t < par.T-1:
                 sim.disp[t+1,:] = sim.h[t,:]*sim.wage[t,:]+sim.p[t,:]+sim.s[t,:]
-                sim.k[t+1,:] = par.phi3*(sim.k[t,:]+par.phi1*sim.h[t,:]**par.phi2)
+                sim.k[t+1,:] = (par.phi3*(sim.k[t,:]+par.phi1*sim.h[t,:]**par.phi2))* par.eps_w[t,:]
                 sim.m[t+1,:] = (1+par.r)*sim.a[t,:]+sim.h[t,:]*sim.wage[t,:]+sim.s[t,:]+sim.p[t,:]
                 
 
