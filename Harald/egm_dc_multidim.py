@@ -10,10 +10,10 @@ def EGM (sol,h,k,t,par):
     w = np.tile(par.epsi_w,(par.Na,1))
 
     # Next period states
-    k_plus = (par.phi3*(k+par.phi1*pow(par.hlist[h],par.phi2)))*epsi
+    k_plus = (1-par.delta)*k+par.phi1*pow(par.hlist[h],par.phi2)
     
     # Income/transfers
-    wage = par.kappa*k
+    wage = par.kappa*k*epsi
     S_plus = par.rho*k_plus
     
     if t < par.To - 1:

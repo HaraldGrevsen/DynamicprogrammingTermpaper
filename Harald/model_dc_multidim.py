@@ -31,15 +31,16 @@ class model_dc_multidim():
         par.beta = 0.97
         par.rho = 0.1
         par.b = 2
-        par.phi3 = 0.97
         par.phi1 = 0.2
         par.phi2 = 0.6
         par.alpha = 1.5
-        par.sigma_w = 0.1   # THIS IS FOR WAGE (MIGHT BE CALLED SIGMA_W)
+        par.delta = 0.03         # HUsk denne 
+        par.sigma_w = 0.1  
         par.sigma_epsilon = 0.3
         par.kappa = 1
         par.r = 0.04
         par.P = 1
+
 
         # Grids and numerical integration
         par.m_max = 30
@@ -59,7 +60,7 @@ class model_dc_multidim():
         # Simulation
         par.m_start = 2 # initial m in simulation
         par.k_start = 1.5 #initial k in simulation
-        par.simN = 1000000 # number of persons in simulation
+        par.simN = 100000 # number of persons in simulation
         par.simT = par.T # number of periods in simulation
         par.simlifecycle = 1 # = 0 simulate infinite horizon model
         
@@ -201,12 +202,12 @@ class model_dc_multidim():
                 else:
                     sim.parti[t,n] = 0
 
-            sim.wage[t,:] = par.kappa * sim.k[t,:]
+            sim.wage[t,:] = par.kappa * sim.k[t,:]* par.eps_w[t,:]
             sim.a[t,:] = sim.m[t,:]-sim.c[t,:]
             
             if t < par.T-1:
                 sim.disp[t+1,:] = sim.h[t,:]*sim.wage[t,:]+sim.p[t,:]+sim.s[t,:]
-                sim.k[t+1,:] = (par.phi3*(sim.k[t,:]+par.phi1*sim.h[t,:]**par.phi2))* par.eps_w[t,:]
+                sim.k[t+1,:] = (1-par.delta)*(sim.k[t,:])+par.phi1*sim.h[t,:]**par.phi2
                 sim.m[t+1,:] = (1+par.r)*sim.a[t,:]+sim.h[t,:]*sim.wage[t,:]+sim.s[t,:]+sim.p[t,:]
                 
 
