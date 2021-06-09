@@ -24,8 +24,8 @@ class model_s():
         par.To = 35  # Number of years before occupational pension payouts, age 60
         
         # Discrete choices
-        #par.hlist = [0,0.2,0.4,0.6,0.8,1]
-        par.hlist = [0,0.5,1,1.125,1.25,1.5]
+        par.hlist = [0,0.2,0.4,0.6,0.8,1]
+        #par.hlist = [0,0.5,1,1.125,1.25,1.5]
 
         
         # Model parameters
